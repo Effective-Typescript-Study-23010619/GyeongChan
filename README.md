@@ -17,7 +17,7 @@
 - 매핑된 타입
 
   - 배열의 필드를 루프 도는 것과 같은 방식
-  - 타입을 확장하거나 새로운 타입을 만들 때, 특정 필드만 가져올 때, 타입을 options로 바꿀 때 사용가능
+  - 타입을 확장하거나 새로운 타입을 만들 때, 특정 필드만 가져올 때, 타입을 options로 바꿀 때 사용가능hg
 
     - 타입 확장
 
@@ -59,6 +59,30 @@
       };
 
       type VipState = Pick<Person, "isVip" | "name">;
+
+      // Pick 활용 예시
+      export interface BrandSearchValue {
+        rank: number;
+        arrow: string;
+        arrow_value: number;
+        is_new: boolean;
+        brand_nm: string;
+        srch_cnt: number;
+        comp_arrow: string;
+        comp_rto: string;
+      }
+
+      export interface BrandWeightGrid {
+        grid_headers: Headers[];
+        results: BrandWeightValue;
+      }
+
+      type BrandWeightValue = Pick<
+        BrandSearchValue,
+        "rank" | "arrow" | "arrow_value" | "is_new" | "brand_nm"
+      > & {
+        srch_weht: string;
+      };
       ```
 
     - 타입을 선택으로 바꿀 때
@@ -136,3 +160,35 @@
     },
   ];
   ```
+
+## Item15: 동적 데이터에 인덱스 시그니처 사용하기
+
+- 타입스크립트는 '인덱스 시그니처를' 사용해 동적 데이터를 표현할 수 있음
+- `[key: string]: string`과 같은 형태로 사용, key는 참고정보로 아무값이나 써도 됨
+- 다만 인덱스로 string 사용이 너무 광범위 하다고 느껴지면 Record와 매핑된 타입을 사용할 수 있음
+
+  ```ts
+  interface Person {
+    [key: string]: string;
+    name: string;
+    email: string;
+    gender: string;
+  }
+  ```
+
+  1.  Record
+
+      - 키 타입에 유연성을 제공하는 제네릭 타입
+      - `Record<K, T>`는 K 타입의 키를 가지고 T 타입의 값을 가지는 객체를 생성
+
+  2.  매핑된 타입
+
+      - 조건부로 key 타입을 제한할 수 있음, extends는 확장보다는 제한의 의미를 가짐
+
+      ```ts
+          Type Person = {[k in 'name' | 'email' | 'age']: k extends 'age' ? number : string} = {
+          name: string
+          email: string
+          age: number
+          }
+      ```
