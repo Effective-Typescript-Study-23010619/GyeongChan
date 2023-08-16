@@ -192,3 +192,52 @@
           age: number
           }
       ```
+
+## Item16: number 인덱스 시그니처보다는 Array, 튜플, ArrayLike를 사용하기
+
+- 자바스크립트의 객체는 문자열이나 심볼을 키로 사용할 수 있음, number는 문자열로 변환되어 사용됨
+- 배열의 인덱스는 숫자로 접근 가능함, 인덱스는 문자열로 변환됨
+- 타입스크립트는 Array에 대해서 선언할 때 number 인덱스 시그니처를 사용함
+- 런타임에서는 의미 없는 가상의 코드이지만, 타입 체크 시점에서 오류를 잡을 수 있어 유용함
+- ? 인덱스 시그니처에 number를 사용하는 것은 피하고, Array, 튜플, ArrayLike를 사용하는 것이 좋음
+
+## Item17: 변경 관련된 오류 방지를 위해 readonly 사용하기
+
+- 값이 변경되면 안되는 경우 readonly를 사용해 오류를 방지할 수 있음
+- readonly number[]와 number[]의 차이
+
+  - 배열 자체 read, write 불가능
+  - length를 읽을 순 있지만, 변경은 불가능
+  - 배열 변경 메소드 사용 불가능(push, pop, splice 등)
+  - readonly 배열은 보통 배열의 할당 가능 반대는 불가능
+
+- 함수의 매개변수가 함수 내에서 변경되지 않는다면 명시적으로 readonly를 사용하는 것이 좋음
+
+  - 의도치 않은 변경 가능
+  - 더 넓은 타입을 사용할 수 있음(item 29)
+
+    ```ts
+    function sum(numbers: readonly number[]) {
+      return numbers.reduce((total, n) => total + n, 0);
+    }
+    ```
+
+  - readonly는 얕게(shallow) 동작함
+  - readonly를 깊게(deeply) 사용하려면 Readonly 제네릭을 사용해야 함
+
+    ```ts
+    type DeepReadonly<T> = {
+      readonly [P in keyof T]: DeepReadonly<T[P]>;
+    };
+
+    const readonlyPerson: DeepReadonly<Person> = {
+      name: "oppenheimer",
+      email: "bomb1945@trinity.com":
+      age: 32,
+    };
+    ```
+
+## Item18: 매핑된 타입을 사용하여 값을 동기화하기
+
+- 리액트가 state를 동기화 및 최적화 하듯
+- 매핑된 타입으로 변경사항 발생시 동기화 하는 최적화 가능
