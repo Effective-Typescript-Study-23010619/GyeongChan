@@ -241,3 +241,109 @@
 
 - 리액트가 state를 동기화 및 최적화 하듯
 - 매핑된 타입으로 변경사항 발생시 동기화 하는 최적화 가능
+
+# 3장 타입 추론
+
+## Item19: 추론 가능한 타입을 사용해 장황한 코드 방지하기
+
+- 타입스크립트는 단순한 문자열이나 숫자 부터 객체까지도 타입을 추론함
+- 따라서 불필요한 타입 구문을 작성하지 않도록 해야함
+- 타입스크립트의 변수는 일반적으로 처음 등장할 때 타입이 결정됨
+
+> 타입 할당하지 않아도 되는 경우
+  - 함수의 파라미터에 대한 타입 정의 => 비구조화 할당문으로 변경
+     - 함수/메서드 시그니처에 타입O but, 함수 내 지역변수 타입 구문X가 이상적
+
+    ```ts
+      interface User {
+        id: string;
+        name: string;
+        email: string;
+        age: number;
+        gender: string
+      }
+
+      function logUser (user: User) {
+        const id: string = user.id
+        const name: string = user.name
+        const email: string = user.email
+        const age: number = user.age
+        const gender: string = user.gender
+        console.log(id, name, email, age, gender)
+      }
+
+      // 비구조화 할당문
+      function logUser (user: User) {
+        const {id, name, email, age, gender} = user
+        console.log(id, name, email, age, gender)
+      }
+    ```
+
+  - 함수의 매개변수의 기본값이 있는 경우
+
+  > 타입이 추론됨에도 명시적으로 적는 경우
+
+  - 객체 리터럴 -> `잉여 속성 체크` 동작
+    - 선택적 속성이 있는 타입의 오타 체크 도와줌
+    - 변수가 사용되는 시점이 아닌 할당하는 시점에 오류가 표시
+
+  - 함수의 반환 타입
+    - 정확한 위치 오류 표시가능
+    - 입력과 출력을 명확히 할 수 있음
+    - 명명된 타입으로 직관적으로 표현 가능  
+    
+## Item20: 다른 타입에는 다른 변수 사용하기
+  - 변수의 값은 바뀔 수 있지만 그 타입은 보통 바뀌지 않는다!
+  
+    ```ts
+      let x = 10
+      x = 'hello' // error
+    ```
+
+  > 타입을 바꾸는 방법
+    - 범위를 좁히기 -> 유니온 타입 사용
+
+## Item21: 타입 넓히기
+  - 런타임에 모든 변수는 유일한 값을 가지지만 코드 제크하는 정적 분석 시점에 변수는 `가능한` 값들의 집합 타입을 가짐
+  - 타입체커는 지정된 단일 값을 가지고 할당 가능한 값들의 집합을 유추해야함!
+  - 이 과정을 `타입 넓히기`라고 함
+
+  - 타입 체커가 타입을 정하기는 상당해 모호함
+  - 넓히기 과정을 제어할 수 있는 방법
+    - 변수 선언시 const를 사용 -> const는 재할당이 불가능함으로 더 좋은 범위로 타입을 한정할 수 있음
+      ```ts
+        const x = 'x'
+        x // type: 'x' not string
+      ```
+
+    - 그러나 const는 객체나 배열일 때 문제가됨
+    - 객체의 경우 타입스크립트 넓히기 알고리즘은 변수를 let으로 선언한 것과 같이 동작함
+  
+  > 타입 추론의 강도 직접제어
+  1. 명시적 타입 구문 제공
+  2. 타입 체커에 추가적인 문맥 제공 (-> 함수의 매개변수로 값을 전달)
+  3. const 단언문을 사용(-> as const)
+    - 타입스크립트는 최대한 좁은 타입으로 타입 추론
+      ```ts
+        const x = {
+          a: 'a',
+          b: 'b'
+        } as const
+        x // type: {readonly a: string, readonly b: string}
+      ```
+
+## Item22: 타입 좁히기
+  - 대표적으로 조건문을 활용한 null 체크
+  
+  1. instanceof
+
+  2. 속성 체크(in 사용)
+  
+  3. 내장 함수 사용(typeof, Array.isArray, Number.isNaN 등)
+
+  4. 명시적 태그 붙이기(태그된 유니온, 구별된 유니온 패턴)
+
+  5. 커스텀 함수(사용자 정의 타입 가드)
+
+  - 타입을 좁힐 때는 실수를 조심해야함
+    - typeof null은 'object'임
