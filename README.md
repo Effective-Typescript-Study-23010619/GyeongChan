@@ -455,3 +455,41 @@
   - 가독성 높임
   - 타입 흐름 개선
   - 명시적인 타입 구문의 필요성 줄어듬
+
+## Item28: 유효한 상태만 표현하는 타입을 지향하기
+
+- 발생할 수 있는 유효한 상태를 모두 표현하도록 명시적 모델링
+
+```ts
+interface RequestPending {
+  state: "pending";
+}
+
+interface RequestError {
+  state: "error";
+  error: string;
+}
+
+interface RequestSuccess {
+  state: "ok";
+  pageText: string;
+}
+
+type RequestState = RequestPending | RequestError | RequestSuccess;
+
+interface State {
+  currentPage: string;
+  request: {
+    [Page: string]: RequestState;
+  };
+}
+```
+
+- 무효한 상태
+  -> 상태 값의 두 가지 속성이 어떤 것인지 모르는 경우
+  -> 상태 값의 두 가지 속성이 충돌하는 경우
+
+## Item29: 사용할 때는 너그럽게, 생성할 때는 엄격하게
+
+- 함수의 매개변수는 타입의 범위가 넓어도 되지만,
+  결과를 반환할 때는 일반적으로 타입의 범위가 더 구체적이어야 한다.
